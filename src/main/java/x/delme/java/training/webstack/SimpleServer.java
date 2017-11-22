@@ -30,6 +30,8 @@ public class SimpleServer {
 					}
 				}
 				System.out.println("Finished listening at port " + port + ".");
+			} else {
+				throw new RuntimeException("Server is already running.");
 			}
 		}
 	}
@@ -39,6 +41,8 @@ public class SimpleServer {
 			if (this.serverSocket != null) {
 				this.serverSocket.close();
 				this.serverSocket = null;
+			} else {
+				throw new RuntimeException("Server is not running.");
 			}
 		}
 	}
