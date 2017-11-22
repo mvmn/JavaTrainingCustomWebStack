@@ -1,1 +1,5 @@
-GET / static:200 Ok Hello world
+### Return Hello world for index
+GET / static:200 Ok#Hello world
+
+### This is just an example
+GET /test static:302 Custom phrase#Nonsense here

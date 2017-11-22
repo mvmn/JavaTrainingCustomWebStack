@@ -10,38 +10,40 @@ public class HttpResponsesConfig {
 	public static HttpResponsesConfig parseConfig(String httpResponsesConfigStr) {
 		HttpResponsesConfig result = new HttpResponsesConfig();
 		for (String line : httpResponsesConfigStr.split("\n")) {
-			int firstSpaceIndex = line.indexOf(" ");
-			int secondSpaceIndex = line.indexOf(" ", firstSpaceIndex + 1);
-			int colonIndex = line.indexOf(":", secondSpaceIndex + 1);
-			String method = line.substring(0, firstSpaceIndex);
-			String path = line.substring(firstSpaceIndex + 1, secondSpaceIndex);
-			String type = line.substring(secondSpaceIndex + 1, colonIndex);
-			String responseDefinitionStr = line.substring(colonIndex + 1);
+			if (!line.trim().isEmpty() && !line.trim().startsWith("#")) {
+				int firstSpaceIndex = line.indexOf(" ");
+				int secondSpaceIndex = line.indexOf(" ", firstSpaceIndex + 1);
+				int colonIndex = line.indexOf(":", secondSpaceIndex + 1);
+				String method = line.substring(0, firstSpaceIndex);
+				String path = line.substring(firstSpaceIndex + 1, secondSpaceIndex);
+				String type = line.substring(secondSpaceIndex + 1, colonIndex);
+				String responseDefinitionStr = line.substring(colonIndex + 1);
 
-			HttpResponseDefinition responseDefinition;
-			if ("static".equalsIgnoreCase(type)) {
-				int respDefFirstSpaceIndex = responseDefinitionStr.indexOf(" ");
-				int respDefSecondSpaceIndex = responseDefinitionStr.indexOf(" ", respDefFirstSpaceIndex + 1);
+				HttpResponseDefinition responseDefinition;
+				if ("static".equalsIgnoreCase(type)) {
+					int respDefFirstSpaceIndex = responseDefinitionStr.indexOf(" ");
+					int respDefSecondSeparatorIndex = responseDefinitionStr.indexOf("#", respDefFirstSpaceIndex + 1);
 
-				int statusCode = Integer.parseInt(responseDefinitionStr.substring(0, respDefFirstSpaceIndex));
-				String reasonPhrase = responseDefinitionStr.substring(respDefFirstSpaceIndex + 1, respDefSecondSpaceIndex);
-				String content = responseDefinitionStr.substring(respDefSecondSpaceIndex + 1);
+					int statusCode = Integer.parseInt(responseDefinitionStr.substring(0, respDefFirstSpaceIndex));
+					String reasonPhrase = responseDefinitionStr.substring(respDefFirstSpaceIndex + 1, respDefSecondSeparatorIndex);
+					String content = responseDefinitionStr.substring(respDefSecondSeparatorIndex + 1);
 
-				responseDefinition = new StaticHttpResponseDefinition(statusCode, reasonPhrase, content);
-			} else if ("file".equalsIgnoreCase(type)) {
-				int respDefFirstSpaceIndex = responseDefinitionStr.indexOf(" ");
-				int respDefSecondSpaceIndex = responseDefinitionStr.indexOf(" ", respDefFirstSpaceIndex + 1);
+					responseDefinition = new StaticHttpResponseDefinition(statusCode, reasonPhrase, content);
+				} else if ("file".equalsIgnoreCase(type)) {
+					int respDefFirstSpaceIndex = responseDefinitionStr.indexOf(" ");
+					int respDefSecondSeparatorIndex = responseDefinitionStr.indexOf("#", respDefFirstSpaceIndex + 1);
 
-				int statusCode = Integer.parseInt(responseDefinitionStr.substring(0, respDefFirstSpaceIndex));
-				String reasonPhrase = responseDefinitionStr.substring(respDefFirstSpaceIndex + 1, respDefSecondSpaceIndex);
-				String filePath = responseDefinitionStr.substring(respDefSecondSpaceIndex + 1);
+					int statusCode = Integer.parseInt(responseDefinitionStr.substring(0, respDefFirstSpaceIndex));
+					String reasonPhrase = responseDefinitionStr.substring(respDefFirstSpaceIndex + 1, respDefSecondSeparatorIndex);
+					String filePath = responseDefinitionStr.substring(respDefSecondSeparatorIndex + 1);
 
-				responseDefinition = new FileHttpResponseDefinition(statusCode, reasonPhrase, filePath);
-			} else {
-				throw new RuntimeException("Unknown HTTP response type definition " + type);
+					responseDefinition = new FileHttpResponseDefinition(statusCode, reasonPhrase, filePath);
+				} else {
+					throw new RuntimeException("Unknown HTTP response type definition " + type);
+				}
+
+				result.addResponseConfigEntry(new HttpResponseConfigEntry(method, path, responseDefinition));
 			}
-
-			result.addResponseConfigEntry(new HttpResponseConfigEntry(method, path, responseDefinition));
 		}
 		return result;
 	}
